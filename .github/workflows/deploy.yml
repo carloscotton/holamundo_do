@@ -25,17 +25,17 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.DROPLET_PORT }}" \
             "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
-            "mkdir -p /var/www/mi-proyecto"
+            "mkdir -p /var/www/html/ghholamundo"
 
       - name: Deploy con rsync
         run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.DROPLET_PORT }}" \
             ./ \
-            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/var/www/mi-proyecto"
+            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/var/www/html/ghholamundo"
 
       - name: Post-deploy opcional
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.DROPLET_PORT }}" \
             "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
-            "cd /var/www/mi-proyecto && echo 'Deploy completado'"
+            "cd /var/www/html/ghholamundo && echo 'Deploy completado'"
