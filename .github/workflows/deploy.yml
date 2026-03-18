@@ -16,10 +16,20 @@ jobs:
       - name: Configurar SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf "%s" "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo "${{ secrets.DROPLET_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+          ssh-keyscan -p "${{ secrets.DROPLET_PORT }}" -H "${{ secrets.DROPLET_HOST }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
+
+      - name: Diagnóstico SSH
+        run: |
+          echo "=== known_hosts ==="
+          cat ~/.ssh/known_hosts
+          echo "=== prueba de conexión ==="
+          ssh -vvv -i ~/.ssh/deploy_key -p "${{ secrets.DROPLET_PORT }}" \
+            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
+            "echo Conexion SSH exitosa"
 
       - name: Crear carpeta destino en el Droplet
         run: |
@@ -30,6 +40,8 @@ jobs:
       - name: Deploy con rsync
         run: |
           rsync -avz --delete \
+            --exclude ".git" \
+            --exclude ".github" \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.DROPLET_PORT }}" \
             ./ \
             "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/var/www/html/ghholamundo"
